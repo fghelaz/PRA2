@@ -8,22 +8,66 @@ date: "2023-05-25"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+\pagebreak
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# 1. Descripción del dataset. ¿Por qué es importante y qué pregunta/problema pretende responder?
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+El conjunto de datos que se utilizará para la práctica se llama #Heart Attack Analysis & Prediction Dataset y se puede encontrar en [kaggle](https://www.kaggle.com/datasets/rashikrahmanpritom/heart-attack-analysis-prediction-dataset) con licencia CC0: Public Domain y su autor es RASHIK RAHMAN.
 
-```{r cars}
-summary(cars)
+Este contiene 70000 registros que hacen referencia a pacientes, a los cuales se les hace un estudio utilizando 13 variables distintas. Una de estas variables es la variable objetivo, la cual es binaria y explica si el paciente en cuestión padece de una enfermedad cardiovascular o no. En este sentido, este conjunto de datos es importante porque con él podemos estudiar cuáles son los atributos más importantes que tienen una influencia directa sobre las enfermedades cardiovasculares, siendo esta la pregunta principal que se tratará de responder mediante el estudio.\
+Antes de continuar, hagamos un repaso sobre cada una de las variables del dataset:
+
+1.  ID: Número de identificación del paciente.
+2.  Age: Edad del paciente en días.
+3.  Height: Altura del paciente en centímetros.
+4.  Weight: Peso del paciente en kilogramos.
+5.  Gender: Género del paciente.
+6.  Systolic blood pressure: Presión arterial sistólica del paciente.
+7.  Diastolic blood pressure: Presión arterial diastólica del paciente.
+8.  Cholesterol: Niveles de colesterol del paciente.
+9.  Glucose: Niveles de glucosa del paciente.
+10. Smoking: Si el paciente es fumador o no.
+11. Alcohol intake: Si el paciente ingiere alcohol o no.
+12. Physical activity: Si el paciente realiza actividad física o no.
+13. Presence or absence of cardiovascular disease (Variable objetivo): Si el paciente presenta una enfermedad cardiovascular o no.
+
+\pagebreak
+
+### Preparado workspace
+
+```{r}
+# Limpiamos el workspace, por si hubiera algun dataset o informacion cargada
+rm(list = ls())
+
+# Limpiamos la consola
+cat("\014")
 ```
 
-## Including Plots
+\pagebreak
 
-You can also embed plots, for example:
+### Carga de librerias
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r message=FALSE, warning=FALSE}
+# source("loadPackages.R")
+
+packages <- c("ggplot2","ggpubr","readr","plotly","tidyverse","lubridate",
+              "magrittr","funModeling","skimr","dplyr","nortest","caret",
+              "rpart","rpart.plot","pROC","ROCR","performance","see",
+              "plotrix", "e1071","interplot","bayestestR","rstanarm","fBasics",
+              "glmnet", "rminer")
+
+new <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new)) install.packages(new)
+a=lapply(packages, require, character.only=TRUE)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+\pagebreak
+
+# 2. Integración y selección de los datos de interés a analizar.
+
+Procedemos a cargar el conjunto de datos
+
+```{r}
+cardio <- read.csv('dataset/heart.csv', sep = ';', header = FALSE,
+                   skip = 1)
+```
