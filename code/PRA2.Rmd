@@ -67,7 +67,7 @@ a=lapply(packages, require, character.only=TRUE)
 
 Procedemos a cargar el conjunto de datos
 
-```{r}
-cardio <- read.csv('dataset/heart.csv', sep = ';', header = FALSE,
-                   skip = 1)
+```{r message=FALSE, warning=FALSE}
+cardio <- read.csv('/dataset/heart.csv', sep = ';', header = FALSE, skip = 1)
 ```
+
