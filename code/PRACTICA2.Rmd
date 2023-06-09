@@ -1,0 +1,291 @@
+---
+title: "PRACTICA2"
+author: "FJGL_JMAS"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    theme: cerulean
+    toc: yes
+    toc_float: true
+    toc_collapsed: true
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+```{r}
+
+# Antes de empezar cargamos las librerías necesarias:
+
+library(readr)
+library(skimr)
+library(tidyverse)
+library(dplyr)
+library(knitr)
+library(ggplot2)
+
+```
+
+
+### 1.- Descripción del dataset. ¿Por qué es importante y qué pregunta/problema pretende responder?
+
+El conjunto de datos que hemos escogido para hacer el estudio es el siguiente: **DATOS DE ECOCARDIAGRAFÍA DE ESTRÉS.** Los datos se han obtenido de la página web: **https://biostat.app.vumc.org/wiki/Main/DataSets.** 
+Hemos escogido este tema porque nos atrae mucho todo lo relacionado con los ecocardiogramas y queremos estudiar la variable **ecg** en función del resto de variables para poder extraer conclusiones, como se verá durante este trabajo.
+
+El **ecocardiograma de estrés** es una prueba utilizada frecuentemente en cardiología que proporciona información en tiempo real acerca del comportamiento tanto del ventrículo izquierdo como de las válvulas en situación de estrés y permite compararlo con el estudio basal en reposo.
+
+Existen diferentes formas de provocar el estrés. La elección de la técnica la sienta el médico que solicita la prueba. La forma más fisiológica es la realización de un ecocardiograma durante el esfuerzo físico que puede realizarse en una cinta rodante similar a la que se utiliza en los gimnasios o en una bicicleta estática. Cuando el paciente no puede realizar ningún tipo de esfuerzo por presentar una limitación física o por su edad se prefiere el ecocardiograma de estrés farmacológico, bien con dobutamina o bien con un vasodilatador (adenosina o dipiridamol).
+
+Ahora procedemos a cargar el dataset seleccionado llamado **stressEcho**:
+
+```{r}
+
+# Cargamos el dataset:
+
+stressEcho <- read_csv("C:/Users/Usuario/Dropbox/MASTER UOC/DATA SCIENCE/SEMESTRE 1/TIPOLOGIA DATOS/4_PRACTICA 2/PRACTICA 2/dataset/stressEcho.csv")
+
+```
+
+Una vez cargado el dataset procedemos a ver su dimensión, estructura y tipo de las variables:
+
+```{r}
+
+dim(stressEcho)
+
+str(stressEcho)
+
+```
+
+Podemos ver que tenemos un dataset con 32 variables y 558 observaciones por cada una de ellas. A continuación realizamos una explicación de cada una de estas variables:
+
+    Variables númericas:
+
+      - bhr: frecuencia cardíaca basal.
+      - basebp: presión arterial basal.
+      - basedp: producto doble basal (= bhr x basebp).
+      - pkhr: frecuencia cardíaca máxima.
+      - sbp: presión arterial sistólica. 
+      - dp: producto doble (= pkhr x sbp). 
+      - dose: dosis de dobutamina administrada. 
+      - maxhr: frecuencia cardíaca máxima. 
+      - pctMphr: % de frecuencia cardíaca máxima predicha alcanzada.
+      - mbp: presión arterial máxima. 
+      - dpmaxdo: doble producto en dosis máxima de dobutamina.
+      - dobdose: dosis de dobutamina a la que se produjo el producto doble máximo. 
+      - age: edad el paciente. 
+      - baseEF: fracción de eyección cardíaca basal (una medida de la eficiencia de bombeo del corazón). 
+      - dobEF: fracción de eyección de dobutamina. 
+      
+    Variables categóricas dicotómicas:
+    
+      - gender: género ("male" o "female").
+      - chestpain: dolor torácico experimentado (0 = sí). 
+      - restwma: anomalía del movimiento de la pared en reposo (0 = sí). 
+      - posSE: ecocardiograma de estrés positivo (0 = sí). 
+      - newMI: nuevo infarto de miocardio o ataque cardíaco (0 = sí).
+      - newPTCA: angioplastia reciente (0 = sí). 
+      - newCABG: cirugía de derivación reciente (0 = sí).
+      - death: murió (0 = sí). 
+      - hxofHT: historial de hipertensión (0 = sí). 
+      - hxofDM: historial de diabetes (0 = sí). 
+      - hxofMI: historial de ataque al corazón (0 = sí). 
+      - hxofPTCA: historia de angioplastia (0 = sí). 
+      - hxofCABG: historial de cirugía de bypass (0 = sí). 
+      - any.event: death, newMI, newPTCA o newCABG (0 = sí). 
+      
+    Variables categóricas politómicas:
+    
+      - hxofCig: historial de fumar ("non-smoker", "moderate" o "heavy").    
+      - ecg: diagnóstico basal de ecocardiograma ("normal", "equivocal" o "MI").
+      
+Después de este resumen de las variables podemos ver que algunas de las variables son dicotómicas o politómicas (es decir están codificadas como texto en la base de datos pero solo cogen 2 o 3 valores diferentes), son las siguientes variables: **gender**, **hxofCig** y **ecg**.
+
+A continuación utilizamos la función **skim()** para obtener un resumen de las principales estadísticas descriptivas de un conjunto de datos. Esta función permite visualizar rápidamente la distribución de los datos, la presencia de valores ausentes, el tipo de datos y la cantidad de valores únicos en cada variable.
+
+```{r}
+
+skimr::skim(stressEcho)
+
+```
+
+Se puede apreciar que no existen **valores ausentes**.
+
+A continuación nos vamos a centrar en estudiar las variables dicotómicas y politómicas:
+
+
+**Descripción de las variables dicotómicas y politómicas del conjunto de datos.**  
+
+```{r}
+
+# Convertir variable numérica en variable categórica:
+stressEcho$gender <- as.factor(stressEcho$gender)
+
+# Crear tabla de frecuencias con porcentajes:
+gender_table <- table(stressEcho$gender)
+gender_table_percent <- prop.table(gender_table) * 100
+
+# Combinar resultados en un data frame:
+gender_table_df <- data.frame(gender = names(gender_table), count = as.vector(gender_table), percent = as.vector(gender_table_percent))
+
+# Crear tabla con kable():
+library(knitr)
+kable(gender_table_df, col.names = c("Gender", "Count", "Percent"), linesep = "solid")
+
+
+# Crear gráfico de barras:
+ggplot(stressEcho, aes(x = gender, fill = gender)) +
+  geom_bar() +
+  labs(x = "Gender", y = "Count", fill = "Gender") +
+  ggtitle("Distribution of Gender in Stress Echo Dataset")
+
+```
+
+
+
+```{r}
+
+# Convertir variable numérica en variable categórica:
+stressEcho$hxofCig <- as.factor(stressEcho$hxofCig)
+
+# Crear tabla de frecuencias con porcentajes:
+hxofCig_table <- table(stressEcho$hxofCig)
+hxofCig_table_percent <- prop.table(hxofCig_table) * 100
+
+# Combinar resultados en un data frame:
+hxofCig_table_df <- data.frame(hxofCig = names(hxofCig_table), count = as.vector(hxofCig_table), percent = as.vector(hxofCig_table_percent))
+
+# Crear tabla con kable():
+kable(hxofCig_table_df, col.names = c("hxofCig", "Count", "Percent"), linesep = "solid")
+
+# Crear gráfico de barras:
+ggplot(stressEcho, aes(x = hxofCig, fill = hxofCig)) +
+  geom_bar() +
+  labs(x = "hxofCig", y = "Count", fill = "hxofCig") +
+  ggtitle("Distribution of hxofCig in Stress Echo Dataset")
+
+```
+
+
+
+```{r}
+
+# Convertir variable numérica en variable categórica:
+stressEcho$ecg <- as.factor(stressEcho$ecg)
+
+# Crear tabla de frecuencias con porcentajes:
+ecg_table <- table(stressEcho$ecg)
+ecg_table_percent <- prop.table(ecg_table) * 100
+
+# Combinar resultados en un data frame:
+ecg_table_df <- data.frame(ecg = names(ecg_table), count = as.vector(ecg_table), percent = as.vector(ecg_table_percent))
+
+# Crear tabla con kable():
+kable(ecg_table_df, col.names = c("ecg", "Count", "Percent"), linesep = "solid")
+
+# Crear gráfico de barras:
+ggplot(stressEcho, aes(x = ecg, fill = ecg)) +
+  geom_bar() +
+  labs(x = "ecg", y = "Count", fill = "ecg") +
+  ggtitle("Distribution of ecg in Stress Echo Dataset")
+
+```
+
+
+### 2.- Integración y selección.
+
+Integración y selección de los datos de interés a analizar. Puede ser el resultado de adicionar diferentes datasets o una subselección útil de los datos originales, en base al objetivo que se quiera conseguir.
+
+
+
+```{r}
+
+
+
+```
+
+
+### 3.- Limpieza de los datos.
+
+#### 3.1.- ¿Los datos contienen ceros o elementos vacíos?.
+
+
+```{r}
+
+
+
+```
+
+
+#### 3.2.- Identifica y gestiona los valores extremos.
+
+
+```{r}
+
+
+
+```
+
+
+### 4.- Análisis de los datos.
+
+#### 4.1.- Selección de los grupos de datos que se quieren analizar/comparar.
+
+
+```{r}
+
+
+
+```
+
+
+#### 4.2.- Comprobación de la normalidad y homogeneidad de la varianza.
+
+
+```{r}
+
+
+
+```
+
+
+#### 4.3.- Aplicación de pruebas estadísticas.
+
+
+```{r}
+
+
+
+```
+
+
+### 5.- Representación gráfica de los resultados.
+
+
+```{r}
+
+
+
+```
+
+
+### 6.- Resolución del problema.
+
+
+```{r}
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
