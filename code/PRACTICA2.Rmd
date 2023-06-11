@@ -33,11 +33,11 @@ library(ggplot2)
 ### 1.- Descripción del dataset. ¿Por qué es importante y qué pregunta/problema pretende responder?
 
 El conjunto de datos que hemos escogido para hacer el estudio es el siguiente: **DATOS DE ECOCARDIAGRAFÍA DE ESTRÉS.** Los datos se han obtenido de la página web: **https://biostat.app.vumc.org/wiki/Main/DataSets.** 
-Hemos escogido este tema porque nos atrae mucho todo lo relacionado con los ecocardiogramas y queremos estudiar la variable **ecg** en función del resto de variables para poder extraer conclusiones, como se verá durante este trabajo.
+Hemos escogido este tema porque nos atrae mucho todo lo relacionado con los ecostressEchogramas y queremos estudiar la variable **ecg** en función del resto de variables para poder extraer conclusiones, como se verá durante este trabajo.
 
-El **ecocardiograma de estrés** es una prueba utilizada frecuentemente en cardiología que proporciona información en tiempo real acerca del comportamiento tanto del ventrículo izquierdo como de las válvulas en situación de estrés y permite compararlo con el estudio basal en reposo.
+El **ecostressEchograma de estrés** es una prueba utilizada frecuentemente en stressEchología que proporciona información en tiempo real acerca del comportamiento tanto del ventrículo izquierdo como de las válvulas en situación de estrés y permite compararlo con el estudio basal en reposo.
 
-Existen diferentes formas de provocar el estrés. La elección de la técnica la sienta el médico que solicita la prueba. La forma más fisiológica es la realización de un ecocardiograma durante el esfuerzo físico que puede realizarse en una cinta rodante similar a la que se utiliza en los gimnasios o en una bicicleta estática. Cuando el paciente no puede realizar ningún tipo de esfuerzo por presentar una limitación física o por su edad se prefiere el ecocardiograma de estrés farmacológico, bien con dobutamina o bien con un vasodilatador (adenosina o dipiridamol).
+Existen diferentes formas de provocar el estrés. La elección de la técnica la sienta el médico que solicita la prueba. La forma más fisiológica es la realización de un ecostressEchograma durante el esfuerzo físico que puede realizarse en una cinta rodante similar a la que se utiliza en los gimnasios o en una bicicleta estática. Cuando el paciente no puede realizar ningún tipo de esfuerzo por presentar una limitación física o por su edad se prefiere el ecostressEchograma de estrés farmacológico, bien con dobutamina o bien con un vasodilatador (adenosina o dipiridamol).
 
 Ahora procedemos a cargar el dataset seleccionado llamado **stressEcho**:
 
@@ -84,8 +84,8 @@ Podemos ver que tenemos un dataset con 32 variables y 558 observaciones por cada
       - gender: género ("male" o "female").
       - chestpain: dolor torácico experimentado (0 = sí). 
       - restwma: anomalía del movimiento de la pared en reposo (0 = sí). 
-      - posSE: ecocardiograma de estrés positivo (0 = sí). 
-      - newMI: nuevo infarto de miocardio o ataque cardíaco (0 = sí).
+      - posSE: ecostressEchograma de estrés positivo (0 = sí). 
+      - newMI: nuevo infarto de miostressEcho o ataque cardíaco (0 = sí).
       - newPTCA: angioplastia reciente (0 = sí). 
       - newCABG: cirugía de derivación reciente (0 = sí).
       - death: murió (0 = sí). 
@@ -99,7 +99,7 @@ Podemos ver que tenemos un dataset con 32 variables y 558 observaciones por cada
     Variables categóricas politómicas:
     
       - hxofCig: historial de fumar ("non-smoker", "moderate" o "heavy").    
-      - ecg: diagnóstico basal de ecocardiograma ("normal", "equivocal" o "MI").
+      - ecg: diagnóstico basal de ecostressEchograma ("normal", "equivocal" o "MI").
       
 Después de este resumen de las variables podemos ver que algunas de las variables son dicotómicas o politómicas (es decir están codificadas como texto en la base de datos pero solo cogen 2 o 3 valores diferentes), son las siguientes variables: **gender**, **hxofCig** y **ecg**.
 
@@ -166,6 +166,8 @@ ggplot(stressEcho, aes(x = hxofCig, fill = hxofCig)) +
   labs(x = "hxofCig", y = "Count", fill = "hxofCig") +
   ggtitle("Distribution of hxofCig in Stress Echo Dataset")
 
+
+
 ```
 
 
@@ -194,6 +196,53 @@ ggplot(stressEcho, aes(x = ecg, fill = ecg)) +
 ```
 
 
+
+Trasformamos las variables númericas suceptibles de ser variables dicotómicas
+
+```{r}
+
+
+stressEcho$chestpain <- ifelse(stressEcho$chestpain == 0, 'Yes', 'Not')
+stressEcho$chestpain <- as.factor(stressEcho$chestpain)
+
+stressEcho$restwma <- ifelse(stressEcho$restwma == 0, 'Yes', 'Not')
+stressEcho$restwma <- as.factor(stressEcho$restwma)
+
+stressEcho$posSE <- ifelse(stressEcho$posSE == 0, 'Yes', 'Not')
+stressEcho$posSE <- as.factor(stressEcho$posSE)
+
+stressEcho$newMI <- ifelse(stressEcho$newMI == 0, 'Yes', 'Not')
+stressEcho$newMI <- as.factor(stressEcho$newMI)
+
+stressEcho$newPTCA <- ifelse(stressEcho$newPTCA == 0, 'Yes', 'Not')
+stressEcho$newPTCA <- as.factor(stressEcho$newPTCA)
+
+stressEcho$newCABG <- ifelse(stressEcho$newCABG == 0, 'Yes', 'Not')
+stressEcho$newCABG <- as.factor(stressEcho$newCABG)
+
+stressEcho$death <- ifelse(stressEcho$death == 0, 'Yes', 'Not')
+stressEcho$death <- as.factor(stressEcho$death)
+
+stressEcho$hxofHT <- ifelse(stressEcho$hxofHT == 0, 'Yes', 'Not')
+stressEcho$hxofHT <- as.factor(stressEcho$hxofHT)
+
+stressEcho$hxofDM <- ifelse(stressEcho$hxofDM == 0, 'Yes', 'Not')
+stressEcho$hxofDM <- as.factor(stressEcho$hxofDM)
+
+stressEcho$hxofMI <- ifelse(stressEcho$hxofMI == 0, 'Yes', 'Not')
+stressEcho$hxofMI <- as.factor(stressEcho$hxofMI)
+
+stressEcho$hxofPTCA <- ifelse(stressEcho$hxofPTCA == 0, 'Yes', 'Not')
+stressEcho$hxofPTCA <- as.factor(stressEcho$hxofPTCA)
+
+stressEcho$hxofCABG <- ifelse(stressEcho$hxofCABG == 0, 'Yes', 'Not')
+stressEcho$hxofCABG <- as.factor(stressEcho$hxofCABG)
+
+stressEcho$any.event <- ifelse(stressEcho$any.event == 0, 'Yes', 'Not')
+stressEcho$any.event <- as.factor(stressEcho$any.event)
+```
+
+
 ### 2.- Integración y selección.
 
 Integración y selección de los datos de interés a analizar. Puede ser el resultado de adicionar diferentes datasets o una subselección útil de los datos originales, en base al objetivo que se quiera conseguir.
@@ -211,13 +260,23 @@ Integración y selección de los datos de interés a analizar. Puede ser el resu
 
 #### 3.1.- ¿Los datos contienen ceros o elementos vacíos?.
 
+Contamos el número de valores na por atributo:
+```{r}
+
+
+colSums(is.na(stressEcho))
+
+```
 
 ```{r}
 
 
-funModeling::status(stressEcho)
+colSums(stressEcho=="")
 
 ```
+
+
+
 Además, la variable “id” hace referencia a la identificación del paciente y esto no es interesante, por lo que la eliminaremos del dataframe
 
 ```{r}
@@ -239,7 +298,30 @@ stressEcho <- stressEcho[, -1]
 
 ### 4.- Análisis de los datos.
 
+## 4.0. EDA
+
+### 4.0.1 Matriz con gráficos de dispersión de las variables cuantitativas
+
+### 4.0.2 Cálculo de los coeficientes de correlación entre variables
+Estudiamos la correlación solo para variables númericas
+
+```{r}
+cor(stressEcho[sapply(stressEcho, is.numeric)])
+```
+
+A continuación, calculamos la correlación entre todas la variables, convirtiendo las variables categóricas en numericas.
+
+```{r}
+# Para variables numéricas y no numéricas. Será necesario transformar
+# todas las variables en tipo numérico antes
+stressEcho_numeric <- data.frame(lapply(stressEcho, function(x) as.numeric(x)))
+cor(stressEcho_numeric)
+```
+
 #### 4.1.- Selección de los grupos de datos que se quieren analizar/comparar.
+
+
+
 
 
 ```{r}
