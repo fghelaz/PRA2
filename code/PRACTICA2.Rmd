@@ -3,14 +3,16 @@ title: "PRACTICA2"
 author: "FJGL_JMAS"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
   html_document:
     theme: cerulean
     toc: yes
-    toc_float: true
+    toc_float: yes
     toc_depth: 3
     number_sections: yes
     code_folding: hide
-  
 ---
 
 ```{r setup, include=FALSE}
