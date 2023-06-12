@@ -1,0 +1,954 @@
+---
+title: "PRACTICA2"
+author: "FJGL_JMAS"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    theme: cerulean
+    toc: yes
+    toc_float: yes
+    toc_depth: 3
+    number_sections: yes
+    code_folding: hide
+ 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, output.path = "")
+```
+
+
+
+# Descripción del dataset. ¿Por qué es importante y qué pregunta/problema pretende responder?
+
+El conjunto de datos que hemos escogido para hacer el estudio es el siguiente: **DATOS DE ECOCARDIAGRAFÍA DE ESTRÉS.** El conjunto de datos stressEcho está disponible en la página web del Departamento de Bioestadística de la Universidad de Vanderbilt. En concreto, se han obtenido de la página web: **https://biostat.app.vumc.org/wiki/Main/DataSets.** 
+
+Hemos escogido este tema porque nos atrae mucho todo lo relacionado con los ecocardiogramas y queremos estudiar la variable **ecg** en función del resto de variables para poder extraer conclusiones, como se verá durante este trabajo.
+
+El **ecocardiograma de estrés** es una prueba utilizada frecuentemente en cardiología que proporciona información en tiempo real acerca del comportamiento tanto del ventrículo izquierdo como de las válvulas en situación de estrés y permite compararlo con el estudio basal en reposo.
+
+Existen diferentes formas de provocar el estrés. La elección de la técnica la sienta el médico que solicita la prueba. La forma más fisiológica es la realización de un ecocardiograma durante el esfuerzo físico que puede realizarse en una cinta rodante similar a la que se utiliza en los gimnasios o en una bicicleta estática. Cuando el paciente no puede realizar ningún tipo de esfuerzo por presentar una limitación física o por su edad se prefiere el ecocardiograma de estrés farmacológico, bien con dobutamina o bien con un vasodilatador (adenosina o dipiridamol).
+
+```{r}
+
+# Antes de empezar cargamos las librerías necesarias
+
+library(readr)
+library(skimr)
+library(tidyverse)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(corrplot)
+library(psych)
+library(gridExtra)
+library(nortest)
+library(reshape2)
+library(stats)
+library(caret)
+library(nnet)
+library(lattice)
+library(purrr)
+library(pROC)
+library(stats)
+library(rpart)
+library(rpart.plot)
+library(plotrix)
+
+```
+
+
+# Integración y selección.
+
+Ahora procedemos a cargar el dataset seleccionado llamado **stressEcho**:
+
+```{r}
+
+# Cargamos el dataset
+
+stressEcho <- read_csv("C:/Users/Usuario/Dropbox/MASTER UOC/DATA SCIENCE/SEMESTRE 1/TIPOLOGIA DATOS/4_PRACTICA 2/PRACTICA 2/dataset/stressEcho.csv")
+
+```
+
+
+Una vez cargado el dataset procedemos a ver su dimensión, estructura y tipo de las variables:
+
+```{r}
+
+dim(stressEcho)
+
+str(stressEcho)
+
+```
+
+
+Podemos ver que tenemos un dataset con 32 variables y 558 observaciones por cada una de ellas. A continuación realizamos una explicación de cada una de estas variables:
+
+    Variables númericas:
+
+      - bhr: frecuencia cardíaca basal.
+      - basebp: presión arterial basal.
+      - basedp: producto doble basal (= bhr x basebp).
+      - pkhr: frecuencia cardíaca máxima.
+      - sbp: presión arterial sistólica. 
+      - dp: producto doble (= pkhr x sbp). 
+      - dose: dosis de dobutamina administrada. 
+      - maxhr: frecuencia cardíaca máxima. 
+      - pctMphr: % de frecuencia cardíaca máxima predicha alcanzada.
+      - mbp: presión arterial máxima. 
+      - dpmaxdo: doble producto en dosis máxima de dobutamina.
+      - dobdose: dosis de dobutamina a la que se produjo el producto doble máximo. 
+      - age: edad el paciente. 
+      - baseEF: fracción de eyección cardíaca basal (una medida de la eficiencia de bombeo del corazón). 
+      - dobEF: fracción de eyección de dobutamina. 
+      
+    Variables categóricas dicotómicas:
+    
+      - gender: género ("male" o "female").
+      - chestpain: dolor torácico experimentado (0 = sí). 
+      - restwma: anomalía del movimiento de la pared en reposo (0 = sí). 
+      - posSE: ecocardiograma de estrés positivo (0 = sí). 
+      - newMI: nuevo infarto de miocardio o ataque cardíaco (0 = sí).
+      - newPTCA: angioplastia reciente (0 = sí). 
+      - newCABG: cirugía de derivación reciente (0 = sí).
+      - death: murió (0 = sí). 
+      - hxofHT: historial de hipertensión (0 = sí). 
+      - hxofDM: historial de diabetes (0 = sí). 
+      - hxofMI: historial de ataque al corazón (0 = sí). 
+      - hxofPTCA: historia de angioplastia (0 = sí). 
+      - hxofCABG: historial de cirugía de bypass (0 = sí). 
+      - any.event: death, newMI, newPTCA o newCABG (0 = sí). 
+      
+    Variables categóricas politómicas:
+    
+      - hxofCig: historial de fumar ("non-smoker", "moderate" o "heavy").    
+      - ecg: diagnóstico basal de ecocardiograma ("normal", "equivocal" o "MI").
+      
+Después de este resumen de las variables podemos ver que algunas de las variables son dicotómicas y politómicas, es decir, algunas están codificadas como texto en la base de datos pero solo cogen 2 o 3 valores diferentes, y, otras aunque están codificadas como numéricas también cogen unicamente dos valores 0 o 1. Estas variables son las siguientes:
+
+    Variables dicotómicas codificadas como texto:
+    
+      - gender.
+      
+    Variables dicotómicas codificadas como numéricas:
+    
+      - chestpain, restwma, posSE, newMI, newPTCA, newCABG, death, hxofHT, hxofDM, hxofMI, hxofPTCA, hxofCABG, any.event.
+      
+    Variables politómicas:
+    
+      - hxofCig, ecg.
+
+
+A continuación utilizamos la función **skim()** para obtener un resumen de las principales estadísticas descriptivas del conjunto de datos. Esta función permite visualizar rápidamente la distribución de los datos, la presencia de valores ausentes, el tipo de datos y la cantidad de valores únicos en cada variable:
+
+```{r}
+
+skimr::skim(stressEcho)
+
+```
+
+
+## Variables dicotómicas codificadas como texto.
+
+A continuación nos vamos a centrar en estudiar las **variables dicotómicas** codificadas como texto:
+
+```{r}
+
+# Convertir variable numérica en variable categórica
+stressEcho$gender <- as.factor(stressEcho$gender)
+
+# Crear tabla de frecuencias con porcentajes
+gender_table <- table(stressEcho$gender)
+gender_table_percent <- prop.table(gender_table) * 100
+
+# Combinar resultados en un data frame
+gender_table_df <- data.frame(gender = names(gender_table), count = as.vector(gender_table), percent = as.vector(gender_table_percent))
+
+# Crear tabla con kable()
+library(knitr)
+kable(gender_table_df, col.names = c("Gender", "Count", "Percent"), linesep = "solid", format = "markdown")
+
+
+# Crear gráfico de barras
+ggplot(stressEcho, aes(x = gender, fill = gender)) +
+  geom_bar() +
+  labs(x = "gender", y = "Count", fill = "gender") +
+  ggtitle("Frequency Distribution of gender")
+
+```
+
+
+## Variables dicotómicas codificadas como numéricas.
+
+A continuación nos vamos a centrar en estudiar las **variables dicotómicas** codificadas como numéricas:  
+
+```{r}
+
+# Definir lista de variables
+var_list <- c("chestpain", "restwma", "posSE", "newMI", "newPTCA", "newCABG", "death", "hxofHT", "hxofDM", "hxofMI", "hxofPTCA", "hxofCABG", "any.event")
+
+# Crear un bucle for para aplicar el código a cada variable
+for (variable in var_list) {
+  # Convertir variable numérica en variable categórica
+  stressEcho[[variable]] <- as.factor(stressEcho[[variable]])
+  
+  # Crear tabla de frecuencias con porcentajes
+  var_table <- table(stressEcho[[variable]])
+  var_table_percent <- prop.table(var_table) * 100
+  
+  # Combinar resultados en un data frame
+  var_table_df <- data.frame(variable = names(var_table), count = as.vector(var_table), percent = as.vector(var_table_percent))
+  
+  # Imprimir la tabla con kable()
+  print(kable(var_table_df, col.names = c(variable, "Count", "Percent"), linesep = "solid", format = "markdown"))
+  
+  # Crear gráfico de barras y mostrarlo con print()
+  print(ggplot(var_table_df, aes(x = variable, y = count, fill = variable)) + 
+        geom_bar(stat = 'identity') + 
+        labs(title = paste("Frequency Distribution of", variable), x = variable, y = "Count"))
+}
+
+```
+
+
+## Variables politómicas codificadas como texto.
+
+A continuación nos vamos a centrar en estudiar las **variables politómicas** codificadas como texto: 
+
+```{r}
+
+# Definir lista de variables
+var_list <- c("hxofCig", "ecg")
+
+# Crear un bucle for para aplicar el código a cada variable
+for (variable in var_list) {
+  # Convertir variable numérica en variable categórica
+  stressEcho[[variable]] <- as.factor(stressEcho[[variable]])
+  
+  # Crear tabla de frecuencias con porcentajes
+  var_table <- table(stressEcho[[variable]])
+  var_table_percent <- prop.table(var_table) * 100
+  
+  # Combinar resultados en un data frame
+  var_table_df <- data.frame(variable = names(var_table), count = as.vector(var_table), percent = as.vector(var_table_percent))
+  
+  # Imprimir la tabla con kable()
+  print(kable(var_table_df, col.names = c(variable, "Count", "Percent"), linesep = "solid", format = "markdown"))
+  
+  # Crear gráfico de barras y mostrarlo con print()
+  print(ggplot(var_table_df, aes(x = variable, y = count, fill = variable)) + 
+        geom_bar(stat = 'identity') + 
+        labs(title = paste("Frequency Distribution of", variable), x = variable, y = "Count"))
+}
+
+```
+
+
+## Variables numéricas.
+
+A continuación nos vamos a centrar en estudiar las **variables numéricas**. En primer lugar miraremos su estructura y buscaremos los estadísticos más importantes:
+
+```{r}
+
+# Crea un subconjunto de datos que excluya las variables dicotómicas
+datos_no_dicotomicas <- subset(stressEcho, select = -c(1, 15, 18:32))
+
+# Realiza el análisis en el subconjunto de datos sin las variables dicotómicas
+summary(datos_no_dicotomicas)
+
+str(datos_no_dicotomicas)
+
+class(datos_no_dicotomicas)
+
+sapply(datos_no_dicotomicas, is.numeric)
+
+```
+
+
+Para hacernos una idea visual del comportamiento de estas variables numéricas haremos el **histograma de densidad** para cada una de ellas:
+
+```{r}
+
+# Obtén los nombres de las columnas numéricas
+columnas_numericas <- names(datos_no_dicotomicas)[sapply(datos_no_dicotomicas, is.numeric)]
+
+# Crea un histograma para cada columna numérica
+for (columna in columnas_numericas) {
+  # Extrae los datos de la columna actual
+  datos_columna <- datos_no_dicotomicas[[columna]]
+  
+  # Crea un histograma usando ggplot2
+  p <- ggplot(data = datos_no_dicotomicas, aes_string(x = columna)) +
+       geom_histogram(aes(y = ..density..), binwidth = 1, fill = "blue", color = "blue") +
+       geom_density(alpha = 0.2, fill = "red", size = 2, colour = "red") +
+       labs(title = paste("Histograma con densidad de", columna),
+            x = columna,
+            y = "Densidad")
+  
+  # Muestra el histograma
+  print(p)
+}
+
+```
+
+
+Para hacernos una idea visual de la distribución de estas variables numéricas haremos un **boxplot-violín** para cada una de ellas:
+
+```{r}
+
+# Obtén los nombres de las columnas numéricas
+columnas_numericas <- names(datos_no_dicotomicas)[sapply(datos_no_dicotomicas, is.numeric)]
+
+# Crea un violin plot para cada columna numérica
+for (columna in columnas_numericas) {
+  # Crea un violin plot usando ggplot2
+  p <- ggplot(data = datos_no_dicotomicas, aes_string(x = "1", y = columna)) +
+       geom_violin(aes(fill = "blue"), alpha = 0.5) +
+       geom_boxplot(width = 0.1, color = "red") +
+       labs(title = paste("Violin Plot de", columna),
+            y = columna,
+            x = "")
+  
+  # Muestra el violin plot
+  print(p)
+}
+
+```
+
+
+Por último vamos a ver la **matriz de correlación** entre estas variables numéricas:
+
+```{r}
+
+# Calcula la matriz de correlación
+matriz_cor <- cor(datos_no_dicotomicas)
+
+# Muestra la matriz de correlación en una tabla
+kable(matriz_cor, format = "html", caption = "Matriz de correlación")
+
+```
+
+
+Al ser esta tabla difícil de interpretar vamos a crear el **gráfico de correlación** y también vamos a agrupar las variables con un **coeficiente de correlación igual o superior a 0.5** sin valores duplicados:
+
+```{r}
+
+# Crea el gráfico de correlación
+corrplot(matriz_cor, method = "circle")
+
+# Encuentra los valores mayores a 0.5 en la matriz de correlación
+indices_mayores <- which(matriz_cor > 0.5 & matriz_cor < 1, arr.ind = TRUE)
+valores_mayores <- matriz_cor[indices_mayores]
+
+# Obtiene los nombres de las variables correspondientes a los índices
+nombres_filas <- rownames(matriz_cor)[indices_mayores[,1]]
+nombres_columnas <- colnames(matriz_cor)[indices_mayores[,2]]
+
+# Crea una tabla con los valores mayores a 0.5 y los nombres de las variables correspondientes
+tabla_mayores <- data.frame(Variable1 = nombres_filas, Variable2 = nombres_columnas, Correlacion = valores_mayores)
+
+# Elimina las filas duplicadas de la tabla, teniendo en cuenta el orden de las variables
+tabla_mayores_sin_duplicados <- tabla_mayores[!duplicated(paste(pmin(tabla_mayores$Variable1, tabla_mayores$Variable2), pmax(tabla_mayores$Variable1, tabla_mayores$Variable2))),]
+
+# Crea la tabla de correlaciones mayores a 0.5 sin duplicados con kableExtra
+tabla_cor_mayores <- tabla_mayores_sin_duplicados %>%
+  mutate(Correlacion = round(Correlacion, 2)) %>%
+  kable(format = "html", caption = "Correlaciones mayores a 0.5 sin duplicados") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+# Muestra la tabla de correlaciones mayores a 0.5 sin duplicados
+tabla_cor_mayores
+
+# Obtiene los nombres de las variables con correlaciones mayores a 0.5 sin duplicados
+variables_mayores <- unique(c(tabla_mayores_sin_duplicados$Variable1, tabla_mayores_sin_duplicados$Variable2))
+
+# Muestra el listado de las variables con correlaciones mayores a 0.5 sin duplicados
+cat(sprintf("Las variables con correlaciones mayores a 0.5 sin duplicados son: %s", paste(variables_mayores, collapse = ", ")))
+
+```
+
+
+
+**Hasta aquí hemos realizado un análisis descriptivo completo de todas las variables de nuestro conjunto de datos para hacernos una idea general de como es y de esta forma poder proseguir con el estudio de éste.**
+
+
+# Limpieza de los datos.
+
+## ¿Los datos contienen ceros o elementos vacíos?.
+
+Para comprobar valores ausentes en todo el conjunto de datos stressEcho, excluyendo los valores 0 en variables dicotómicas numéricas, primero identificaremos cuáles son las columnas con variables dicotómicas. Luego, verificaremos la presencia de valores ausentes en las columnas no dicotómicas y, para las dicotómicas, solo consideraremos NA como valor ausente. Como la **variable 1 corresponde al id del paciente** la eliminaremos de nuestro conjunto de datos:
+
+```{r}
+
+# Eliminar la primera columna
+stressEcho <- stressEcho[, -1]
+
+# Función para verificar si una columna es dicotómica
+es_dicotomica <- function(columna) {
+  es_factor <- is.factor(columna)
+  es_logica <- is.logical(columna)
+  valores_unicos <- unique(columna)
+  tiene_dos_valores <- length(valores_unicos) == 2
+  !es_factor & es_logica & tiene_dos_valores
+}
+
+# Identificar columnas dicotómicas
+columnas_dicotomicas <- sapply(stressEcho, es_dicotomica)
+
+# Seleccionar las columnas no dicotómicas
+columnas_no_dicotomicas <- stressEcho[, !columnas_dicotomicas]
+
+# Calcular número de NA por columna
+num_na <- sapply(columnas_no_dicotomicas, function(columna) sum(is.na(columna)))
+
+# Crear un data frame con los resultados
+resultados <- data.frame(
+  Columna = names(num_na),
+  Num_NAs = num_na
+)
+
+# Eliminar la primera variable
+resultados <- resultados[-1, ]
+
+# Ajustar el ancho de las columnas
+col_widths <- c(0.5, 0.3)
+
+# Mostrar la tabla
+kable(resultados, col.names = c("Columna", "Número de NAs"),
+      align = "l", col_widths = col_widths, space = "m")
+
+
+```
+
+
+Realizado esto, podemos afirmar que **no existen valores ausentes.**
+
+
+## Identifica y gestiona los valores extremos.
+
+Para identificar y gestionar los **valores extremos** en un conjunto de datos, una técnica común es utilizar el **método de los cuartiles**, también conocido como el método IQR (rango intercuartil). Esto implica identificar valores que son significativamente más bajos que el primer cuartil o significativamente más altos que el tercer cuartil.
+
+```{r}
+
+# Función para identificar outliers usando el método IQR y calcular el rango de los valores no extremos
+identify_outliers_and_range <- function(x) {
+  if (is.numeric(x)) {
+    # Calcular cuartiles y rango intercuartil
+    Q1 <- quantile(x, 0.25, na.rm = TRUE)
+    Q3 <- quantile(x, 0.75, na.rm = TRUE)
+    IQR <- Q3 - Q1
+    
+    # Identificar valores extremos
+    outliers <- x < Q1 - 1.5 * IQR | x > Q3 + 1.5 * IQR
+    
+    # Calcular rango de los valores no extremos
+    non_outliers <- x[!outliers]
+    range_non_outliers <- range(non_outliers, na.rm = TRUE)
+    
+    # Devolver los valores extremos y rango de valores no extremos
+    return(list(outliers = x[outliers], range = range_non_outliers))
+  } else {
+    # Devolver NA para columnas no numéricas
+    return(list(outliers = NA, range = NA))
+  }
+}
+
+# Aplicar la función a cada columna del data frame
+outliers_and_range_list <- lapply(stressEcho, identify_outliers_and_range)
+
+# Crear un data frame para los resultados
+outliers_and_range_df <- data.frame(
+  Variable = character(),
+  Outliers = character(),
+  Count_of_Outliers = integer(),
+  Range_of_Non_Outliers = character(),
+  stringsAsFactors = FALSE
+)
+
+# Poblar el data frame con los valores extremos, conteo de valores extremos y rango de valores no extremos por variable
+for (i in 1:length(outliers_and_range_list)) {
+  if (length(outliers_and_range_list[[i]]$outliers) > 0 && !is.na(outliers_and_range_list[[i]]$outliers[1])) {
+    outliers_and_range_df <- rbind(outliers_and_range_df, data.frame(
+      Variable = names(outliers_and_range_list)[i],
+      Outliers = paste(outliers_and_range_list[[i]]$outliers, collapse = ", "),
+      Count_of_Outliers = length(outliers_and_range_list[[i]]$outliers),
+      Range_of_Non_Outliers = paste(outliers_and_range_list[[i]]$range, collapse = " - "),
+      stringsAsFactors = FALSE
+    ))
+  }
+}
+
+# Ajustar el ancho de las columnas
+col_widths <- c(0.25, 0.3, 0.2, 0.35)
+
+# Mostrar la tabla
+kable(outliers_and_range_df, col.names = c("Variable", "Valores Extremos", "Número de Valores Extremos", "Rango de Valores No Extremos"), 
+      align = "l", col_widths = col_widths, space = "m")
+
+```
+
+
+Hemos podido observar que casi todas las variables presentan valores atípicos. En este sentido, optaremos por eliminar todas estas observaciones extremas (excepto las de la **variable age**) ya que nuestro conjunto de datos es muy grande. Esto lo vamos a realizar con la certeza de que no van a influir en los resultados finales, pues consideramos que hay información de sobra.
+
+Procedemos a **eliminar los valores extremos**:
+
+```{r}
+
+# Definir la función para eliminar outliers y devolver un vector lógico
+remove_outliers <- function(x) {
+  if (is.numeric(x)) {
+    # Calcular cuartiles y rango intercuartil del vector x
+    Q1 <- quantile(x, 0.25, na.rm = TRUE)
+    Q3 <- quantile(x, 0.75, na.rm = TRUE)
+    IQR <- Q3 - Q1
+    
+    # Identificar valores extremos y devolver un vector lógico
+    return(x < Q1 - 1.5 * IQR | x > Q3 + 1.5 * IQR)
+  } else {
+    # Devolver un vector lógico con valores FALSE para columnas no numéricas
+    return(rep(FALSE, length(x)))
+  }
+}
+
+# Aplicar la función a cada columna del data frame y combinar los vectores lógicos en una matriz
+outliers <- sapply(stressEcho, remove_outliers)
+outliers <- apply(outliers, 1, any)
+
+# Eliminar las filas que contienen outliers
+stressEcho_no_outliers <- stressEcho[!outliers, ]
+
+# Comparar el número de filas en el conjunto de datos original y sin valores extremos
+n_rows_original <- nrow(stressEcho)
+n_rows_final <- nrow(stressEcho_no_outliers)
+n_rows_eliminated <- n_rows_original - n_rows_final
+
+# Imprimir el número de filas eliminadas
+cat("Se han eliminado", n_rows_eliminated, "filas del conjunto de datos original.\n")
+
+```
+
+Ahora volvemos a realizar la distribución de las variables mediante un **boxplot-violín** después de eliminar los valores extremos y podemos visualizar un cambio muy sustancial en casi todas ellas, menos en las variables **dose y dobdose**:
+
+```{r}
+
+# Obtén los nombres de las columnas numéricas
+columnas_numericas <- names(stressEcho_no_outliers)[sapply(stressEcho_no_outliers, is.numeric)]
+
+# Crea un violin plot para cada columna numérica
+for (columna in columnas_numericas) {
+  # Crea un violin plot usando ggplot2
+  p <- ggplot(data = stressEcho_no_outliers, aes(x = 1, y = get(columna))) +
+       geom_violin(aes(fill = "blue"), alpha = 0.5) +
+       geom_boxplot(width = 0.1, color = "red") +
+       labs(title = paste("Violin Plot de", columna),
+            y = columna,
+            x = "")
+  
+  # Muestra el violin plot
+  print(p)
+}
+
+```
+
+
+# Análisis de los datos.
+
+## Comprobación de la normalidad y homogeneidad de la varianza de las variables.
+
+Para comprobar la **normalidad de los datos** del conjunto de datos **stressEcho_no_outliers**, se pueden utilizar pruebas estadísticas como la **prueba de normalidad de Shapiro-Wilk** o la **prueba de Kolmogorov-Smirnov**. Para la **homogeneidad de la varianza**, se pueden utilizar pruebas estadísticas como la **prueba de Levene** o la **prueba de Bartlett**.
+
+
+**Comprobación de la normalidad de los datos:**
+
+El objetivo de este análisis es evaluar la normalidad de las variables numéricas sin valores ausentes y no categóricas del conjunto de datos **stressEcho_no_outliers**. Para lograr esto, se utiliza la **prueba de Shapiro-Wilk**:
+
+```{r}
+
+# Crear una lista vacía para almacenar las variables que cumplen los requisitos
+  vars_list1 <- c()
+  
+# Bucle for para iterar a través de todas las variables
+for (col in names(stressEcho_no_outliers)) {
+  # Comprobación de la normalidad para variables numéricas sin valores faltantes y no categóricas
+  if (is.numeric(stressEcho_no_outliers[[col]]) & length(unique(stressEcho_no_outliers[[col]])) > 2 & sum(is.na(stressEcho_no_outliers[[col]])) == 0 & !is.factor(stressEcho_no_outliers[[col]])) {
+    if (shapiro.test(stressEcho_no_outliers[[col]])$p.value > 0.05) {
+      vars_list1 <- c(vars_list1, col)
+    }
+  }
+}
+  
+# Imprimir las variables que cumplen los requisitos de normalidad según la prueba de Shapiro-Wilk
+print(vars_list1)
+
+```
+
+```{r}
+
+# Imprimir las variables que cumplen los requisitos
+cat("Las siguientes variables cumplen con el requisito de normalidad:", paste(vars_list1, collapse = ", "), "\n")
+
+```
+
+
+**Comprobación de la homogeneidad de varianza de los datos:**
+
+El objetivo de este análisis es evaluar la homogeneidad de la varianza de las variables numéricas sin valores ausentes y no categóricas del conjunto de datos **stressEcho_no_outliers**. Para lograr esto, se utiliza la **prueba de Bartlett**:
+
+```{r}
+
+# Crear una lista vacía para almacenar las variables que cumplen los requisitos
+vars_list2 <- c()
+
+# Bucle for para iterar a través de todas las variables
+for (col in names(stressEcho_no_outliers)) {
+  # Homogeneidad de la varianza para variables numéricas
+  if (is.numeric(stressEcho_no_outliers[[col]]) & length(unique(stressEcho_no_outliers[[col]])) > 2) {
+    if (bartlett.test(stressEcho_no_outliers[[col]], stressEcho_no_outliers$gender)$p.value > 0.05) {
+      # Agregar la variable a la lista si cumple el requisito
+      vars_list2 <- c(vars_list2, col)
+    }
+  }
+}
+
+# Imprimir las variables que cumplen los requisitos de homogeneidad de la varianza según la prueba de Bartlett
+print(vars_list2)
+
+```
+
+```{r}
+
+# Imprimir las variables que cumplen los requisitos
+cat("Las siguientes variables cumplen con el requisito de homogeneidad de la varianza:", paste(vars_list2, collapse = ", "), "\n")
+
+```
+
+
+## Selección de los grupos de datos que se quieren analizar/comparar.
+
+Ahora queremos analizar la **variable ecg** en función de diferentes grupos de variables. Para llevar acabo esto hemos pensado en los siguientes grupos:
+
+
+    1.- gender: comparar la variable ECG entre hombres y mujeres.
+    
+    2.- chestpain: comparar la variable ECG solo entre pacientes con y sin dolor en el pecho.
+    
+    3.- maxhr: comparar la variable ECG solo entre pacientes con frecuencia cardíaca máxima.
+    
+
+## Aplicación de pruebas estadísticas.
+
+### Variable gender.
+
+Para hacer un estudio entre las **variables gender y ecg**, vamos a utilizar una **prueba de chi-cuadrado** para evaluar si hay una asociación significativa entre ambas variables.
+
+La **prueba de chi-cuadrado** es una prueba estadística que se utiliza para evaluar la asociación entre dos variables categóricas. En este caso, la variable gender es categórica y la variable ecg es categórica también.
+
+Antes de aplicar la prueba de chi-cuadrado, nos tenemos que asegurar de que se cumplan los supuestos:
+
+    1.- Las observaciones sean independientes.
+    2.- Las celdas de la tabla de contingencia tengan un tamaño mínimo de 5.
+    3.- No haya valores ausentes en los datos.
+
+Una vez que se cumplan estos supuestos, podremos aplicar la prueba de chi-cuadrado y evaluar si hay una asociación significativa entre las variables. Si el valor de **p es menor que el nivel de significancia establecido (por ejemplo, 0.05)**, entonces se puede concluir que hay una asociación significativa entre las variables.
+
+En nuestro caso, ya sabemos que se cumplen los supuestos por los estudios realizados anteriormente, con lo cual procedemos a realizar la **prueba chi-cuadrado**:
+
+```{r}
+
+# Realizar un análisis exploratorio de los datos
+ggplot(stressEcho_no_outliers, aes(x=gender, fill=ecg)) + geom_bar(position="dodge") +
+  labs(title="Distribución de la variable ECG por género", x="Género", y="Frecuencia")
+
+# Aplicar la prueba de chi-cuadrado
+contingency_table <- table(stressEcho_no_outliers$gender, stressEcho_no_outliers$ecg)
+resultados_chi2 <- chisq.test(contingency_table)
+
+# Imprimir los resultados
+print(resultados_chi2)
+
+```
+
+
+Según los resultados obtenidos, la estadística de prueba es 1.004, los grados de libertad son 2 y el valor p es 0.6053. Con un **valor p mayor a 0.05**, no hay suficiente evidencia para rechazar la hipótesis nula. Esto significa que **no hay una asociación significativa entre las variables gender y ecg.**
+
+
+### Variable chestpain.
+
+Para hacer un estudio entre las **variables chestpain y ecg** también vamos a utilizar una **prueba de chi-cuadrado** para evaluar si hay una asociación significativa entre ambas variables:
+
+```{r}
+
+# Realizar un análisis exploratorio de los datos
+ggplot(stressEcho_no_outliers, aes(x=chestpain, fill=ecg)) + geom_bar(position="dodge") +
+  labs(title="Distribución de la variable ECG por tipo de dolor en el pecho", x="Tipo de dolor en el pecho", y="Frecuencia")
+
+# Aplicar la prueba de chi-cuadrado
+contingency_table <- table(stressEcho_no_outliers$chestpain, stressEcho_no_outliers$ecg)
+resultados_chi2 <- chisq.test(contingency_table)
+
+# Imprimir los resultados
+print(resultados_chi2)
+
+```
+
+
+Según los resultados obtenidos, la estadística de prueba es 21.101, los grados de libertad son 2 y el valor **p es 2.618e-05 (muy cercano a cero)**. Con un valor p tan bajo, podemos concluir que hay suficiente evidencia para rechazar la hipótesis nula y afirmar que **hay una asociación significativa entre las variables chestpain y ecg.**
+
+
+### Variable maxhr.
+
+Para hacer un estudio entre las **variables maxhr y ecg** vamos a utilizar la **prueba de análisis de varianza (ANOVA) de un factor**, ya que la variable ecg tiene 3 niveles. Si tuviese menos niveles podríamos haber utilizado directamente la **prueba t de Student para muestras independientes**. 
+
+El **ANOVA (Análisis de Varianza) de un factor** es una técnica estadística que se utiliza para evaluar si hay diferencias significativas en la media de una variable continua entre dos o más grupos definidos por una variable categórica. En el **ANOVA de un factor**, se compara la variación entre los grupos con la variación dentro de los grupos para determinar si la variación entre los grupos es significativamente mayor que la variación dentro de los grupos.
+
+La **hipótesis nula del ANOVA de un factor** es que no hay diferencias significativas entre las medias de los grupos, mientras que la **hipótesis alternativa** es que al menos una de las medias de los grupos es diferente. Si se rechaza la hipótesis nula, se puede concluir que hay al menos un grupo cuya media es significativamente diferente a la media de los otros grupos.
+
+Para realizar un **ANOVA de un factor**, se deben cumplir los supuestos:
+
+    1.- Las variables tengan una distribución normal.
+    2.- La varianza sea igual en todos los grupos.
+    
+En nuestro caso, ya sabemos que se cumplen los supuestos por los estudios realizados anteriormente, con lo cual procedemos a realizar la **prueba de análisis de varianza (ANOVA) de un factor**:
+
+```{r}
+
+# Gráfico de caja y bigotes con colores
+ggplot(stressEcho_no_outliers, aes(x=ecg, y=maxhr, fill=ecg)) + 
+  geom_boxplot() +
+  scale_fill_manual(values=c("darkorange", "skyblue", "purple")) + # Definir los colores de los grupos
+  xlab("ECG") +
+  ylab("Frecuencia cardíaca máxima") +
+  labs(fill = "Tipo de ECG") +
+  ggtitle("Frec. cardíaca máxima según tipo ECG")
+  
+# Aplicar la prueba ANOVA
+resultados_anova <- aov(maxhr ~ ecg, data=stressEcho_no_outliers)
+
+# Imprimir los resultados
+summary(resultados_anova)
+
+```
+
+
+La **tabla ANOVA** muestra que hay dos grados de libertad para ecg y 454 grados de libertad para Residuals. La suma de cuadrados para ecg es 1307 y la suma de cuadrados para Residuals es 187534. La media de cuadrados para ecg es 653.6 y la media de cuadrados para Residuals es 413.1.
+
+El valor F calculado para ecg es 1.582, y el **valor p asociado con la prueba F es 0.207**. El valor p indica que no hay suficiente evidencia para rechazar la hipótesis nula de que **no hay efecto significativo de ecg en la variable respuesta**. 
+
+
+## Análisis de regresión.
+
+En este apartado del estudio queremos predecir la **variable categórica politómica ecg** en función de todas las variables numéricas. Para poder hacerlo tenemos que realizar un **modelo de regresión logística multinomial**.
+
+Un **modelo de regresión logística multinomial** es una técnica estadística utilizada para predecir la probabilidad de que una observación pertenezca a cada una de las categorías de una variable categórica con tres o más niveles. En otras palabras, **es un modelo de clasificación multiclase** que se utiliza para predecir la probabilidad de que una observación pertenezca a cada una de las categorías de la variable dependiente.
+
+El modelo se basa en la **función softmax**, que es una generalización de la función logística utilizada en el modelo de regresión logística binomial. La **función softmax** transforma la suma ponderada de las variables predictoras en una distribución de probabilidad sobre las categorías de la variable dependiente. Cada categoría tiene su propia ecuación de regresión logística, que se utiliza para modelar la probabilidad de que la observación pertenezca a esa categoría.
+
+Para **ajustar el modelo de regresión logística multinomial**, primero debemos dividir los datos en conjuntos de entrenamiento y prueba:
+
+```{r}
+
+# Dividir los datos en conjuntos de entrenamiento y prueba
+set.seed(123)
+trainIndex <- createDataPartition(stressEcho_no_outliers$ecg, p = 0.7, list = FALSE)
+train <- stressEcho_no_outliers[trainIndex, ]
+test <- stressEcho_no_outliers[-trainIndex, ]
+
+```
+
+
+Luego, podemos ajustar un modelo de regresión logística multinomial utilizando todas las variables predictoras:
+
+```{r}
+
+modelo <- multinom(ecg ~ bhr + basebp + basedp + pkhr + sbp + dp + dose + maxhr + pctMphr + mbp + dpmaxdo + dobdose + age + baseEF + dobEF + gender + chestpain + restwma + posSE + newMI + newPTCA + newCABG + death + hxofHT + hxofDM + hxofMI + hxofPTCA + hxofCABG + any.event + hxofCig, data = train)
+
+```
+
+Podemos obtener un resumen del modelo utilizando la función summary():
+
+```{r}
+
+summary(modelo)
+
+```
+
+
+Esto nos muestra los coeficientes estimados para cada variable predictoras, así como las estadísticas de ajuste del modelo.
+
+Para evaluar el rendimiento del modelo, podemos utilizar el conjunto de prueba y **calcular la matriz de confusión y la precisión**:
+
+```{r}
+
+predicciones <- predict(modelo, newdata = test)
+predicciones
+
+matriz_confusion <- table(test$ecg, predicciones)
+matriz_confusion
+
+precision <- sum(diag(matriz_confusion)) / sum(matriz_confusion)
+precision
+
+```
+
+
+La **matriz de confusión** nos muestra la cantidad de predicciones correctas e incorrectas para cada categoría de la variable dependiente. La **precisión** es la proporción de predicciones correctas en relación al total de predicciones. En nuestro modelo la **precisión es del 58.09%**.
+
+Además, podemos utilizar la **función confusionMatrix()** del paquete caret para obtener una evaluación más detallada del rendimiento del modelo:
+
+```{r}
+
+evaluacion <- confusionMatrix(predicciones, test$ecg)
+evaluacion
+
+```
+
+
+La matriz de confusión y las estadísticas indican que **el modelo tiene una precisión del 58.09%, con un intervalo de confianza del 95% entre 49.33% y 66.49%**.
+
+La **tasa de error de clasificación es del 41.91%**. Los valores de sensibilidad y especificidad para cada clase indican que el modelo tiene una mayor capacidad para detectar la clase "normal" con una especificidad del 95.76%.
+
+Ahora vamos a crear una **curva ROC (Receiver Operating Characteristic)** para evaluar la capacidad del modelo para discriminar entre las diferentes clases. Para ello, podemos utilizar la **función roc() del paquete pROC**:
+
+```{r}
+
+# Crear la curva ROC para cada clase
+roc_modelo <- multiclass.roc(levels = c("equivocal", "MI", "normal"), response = test$ecg, predictor = predict(modelo, newdata = test, type = "prob"))
+
+# Graficar la curva ROC para la clase "equivocal"
+plot(roc_modelo[[1]], col = "blue", print.auc = TRUE, auc.polygon = TRUE, max.auc.polygon = TRUE, grid=c(0.1, 0.2), print.auc.x = 0.2, print.auc.y = 0.8, curve = "equivocal")
+
+# Graficar la curva ROC para la clase "MI"
+plot(roc_modelo[[2]], col = "red", print.auc = TRUE, auc.polygon = TRUE, max.auc.polygon = TRUE, grid=c(0.1, 0.2), print.auc.x = 0.2, print.auc.y = 0.8, curve = "MI")
+
+# Graficar la curva ROC para la clase "normal"
+plot(roc_modelo[[3]], col = "green", print.auc = TRUE, auc.polygon = TRUE, max.auc.polygon = TRUE, grid=c(0.1, 0.2), print.auc.x = 0.2, print.auc.y = 0.8, curve = "normal")
+
+```
+
+
+## Árbol de decisión.
+
+Los **árboles de decisión** son una herramienta de modelado estadístico que se utilizan para predecir el valor de una variable objetivo (también conocida como variable de respuesta) en función de una serie de variables predictoras (también conocidas como variables explicativas).
+
+El árbol de decisión **es una estructura jerárquica similar a un diagrama de flujo**, donde cada nodo interno representa una pregunta o una condición sobre una variable predictor, y cada rama representa una posible respuesta o resultado de la pregunta o condición. Las hojas del árbol representan las predicciones finales para la variable objetivo.
+
+El **objetivo del árbol de decisión** es dividir el conjunto de datos en subconjuntos más pequeños y homogéneos en función de las variables predictoras, de manera que las predicciones sean lo más precisas posible. La división se realiza seleccionando la variable predictor que mejor separa los datos en términos de la variable objetivo, y luego dividiendo los datos en dos o más grupos en función de los valores posibles de la variable predictor.
+
+Antes de realizar el árbol de decisión vamos a mostrar **la proporción de cada categoría de ecg dentro de cada género y nivel de hxofCig**, con los porcentajes etiquetados en cada segmento de las barras apiladas:
+
+```{r}
+
+# Calcula los porcentajes para cada combinación de gender, hxofCig y ecg
+percentages <- stressEcho_no_outliers %>%
+  count(gender, hxofCig, ecg) %>%
+  group_by(gender, hxofCig) %>%
+  mutate(percentage = n / sum(n) * 100)
+
+# Crea un gráfico de barras apiladas con porcentajes
+ggplot(data = percentages, aes(x = gender, y = percentage, fill = ecg)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = paste0(round(percentage, 1), "%")), position = position_stack(vjust = 0.5), size = 3) +
+  facet_wrap(~hxofCig) +
+  labs(title = "Gráfico de barras apiladas con porcentajes",
+       x = "Género",
+       y = "Porcentaje") +
+  theme_minimal()
+
+
+```
+
+
+Ahora realizamos un **gráfico tipo sizetree** para entender mejor las **variables ecg, gender y hxofCig**:
+
+```{r}
+
+stressEcho_no_outliers$ecg <- factor(stressEcho_no_outliers$ecg)
+stressEcho_no_outliers$gender <- factor(stressEcho_no_outliers$gender)
+stressEcho_no_outliers$hxofCig <- factor(stressEcho_no_outliers$hxofCig)
+
+
+shecol<-list( c("red","green","gold"),c("pink","lightblue"), c("blue","gold","green"))
+
+data<- stressEcho_no_outliers %>% dplyr::select(ecg,gender,hxofCig)
+
+sizetree(data,main="ECG VS Sexo VS Fumador", col=shecol, 
+         toplab=c("ECG", "Sexo", "Fuma"))
+
+```
+
+
+A continuación vamos a buscar el mejor árbol de decisión entre las **variables ecg, gender y hxofCig**, no solo vamos a ajustar los modelos y calcular su precisión, sino que también vamos a visualizar cada uno de los árboles de decisión:
+
+```{r}
+
+# Ajustar el modelo de árbol de decisión para 'ecg' como respuesta
+modelo_ecg <- rpart(ecg ~ gender + hxofCig, data = stressEcho_no_outliers, method = "class")
+
+# Ajustar el modelo de árbol de decisión para 'gender' como respuesta
+modelo_gender <- rpart(gender ~ ecg + hxofCig, data = stressEcho_no_outliers, method = "class")
+
+# Ajustar el modelo de árbol de decisión para 'hxofCig' como respuesta
+modelo_hxofCig <- rpart(hxofCig ~ ecg + gender, data = stressEcho_no_outliers, method = "class")
+
+# Predecir y calcular la precisión para el modelo 'ecg'
+predicciones_ecg <- predict(modelo_ecg, newdata = stressEcho_no_outliers, type = "class")
+precision_ecg <- sum(predicciones_ecg == stressEcho_no_outliers$ecg) / length(predicciones_ecg)
+
+# Predecir y calcular la precisión para el modelo 'gender'
+predicciones_gender <- predict(modelo_gender, newdata = stressEcho_no_outliers, type = "class")
+precision_gender <- sum(predicciones_gender == stressEcho_no_outliers$gender) / length(predicciones_gender)
+
+# Predecir y calcular la precisión para el modelo 'hxofCig'
+predicciones_hxofCig <- predict(modelo_hxofCig, newdata = stressEcho_no_outliers, type = "class")
+precision_hxofCig <- sum(predicciones_hxofCig == stressEcho_no_outliers$hxofCig) / length(predicciones_hxofCig)
+
+# Mostrar las precisiones
+cat("Precisión del modelo con 'ecg' como respuesta:", precision_ecg, "\n")
+cat("Precisión del modelo con 'gender' como respuesta:", precision_gender, "\n")
+cat("Precisión del modelo con 'hxofCig' como respuesta:", precision_hxofCig, "\n")
+
+# Identificar y mostrar el mejor modelo basado en la precisión
+precisiones <- c(precision_ecg, precision_gender, precision_hxofCig)
+nombres_modelos <- c("modelo_ecg", "modelo_gender", "modelo_hxofCig")
+mejor_modelo <- nombres_modelos[which.max(precisiones)]
+
+cat("El mejor modelo basado en la precisión es:", mejor_modelo, "\n")
+
+# Visualizar el árbol para 'ecg'
+cat("Árbol de decisión para 'ecg':\n")
+rpart.plot(modelo_ecg, box.palette="GnBu")
+
+# Visualizar el árbol para 'gender'
+cat("Árbol de decisión para 'gender':\n")
+rpart.plot(modelo_gender, box.palette="BuGn")
+
+# Visualizar el árbol para 'hxofCig' 
+cat("Árbol de decisión para 'hxofCig':\n")
+rpart.plot(modelo_hxofCig, box.palette="OrRd")
+
+
+```
+
+
+El **mejor modelo de árbol de decisión** es el modelo_gender con una precisión del 0.65.
+
+
+# Conclusiones del estudio.
+
+
+
+
+# Aplicación Shiny.
+
+Durante la realización de esta práctica nos dimos cuenta que siempre tienes que "perder tiempo" mirando cualquier dataset.
+
+Para intentar palier este problema **hemos creado una aplicación Sniny** que realiza un análisis descriptivo de cualquier dataset en formato .csv. Dicha aplicación **es pública** y está alojada en el siguiente link:
+
+https://arrocar.shinyapps.io/ANALISIS_DATOS/
+
+También adjuntamos todo el código en la carpeta source de esta práctica.
+
+
+
+
