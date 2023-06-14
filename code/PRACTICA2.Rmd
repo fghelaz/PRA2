@@ -67,7 +67,7 @@ Ahora procedemos a cargar el dataset seleccionado llamado **stressEcho**:
 
 # Cargamos el dataset
 
-stressEcho <- read_csv("C:/Users/Usuario/Dropbox/MASTER UOC/DATA SCIENCE/SEMESTRE 1/TIPOLOGIA DATOS/4_PRACTICA 2/PRACTICA 2/dataset/stressEcho.csv")
+stressEcho <- read_csv("stressEcho.csv")
 
 ```
 
@@ -936,7 +936,40 @@ El **mejor modelo de árbol de decisión** es el modelo_gender con una precisió
 
 # Conclusiones del estudio.
 
+A continuación vamos a mostrar todas las conclusiones que hemos podido extraer del **estudio del dataset stressEcho**:
 
+
+## Análisis descriptivo.
+
+1.- El dataset contiene **32 variables y 558 observaciones**, de las cuales: 15 son variables son numéricas, 14 son variables categóricas dicotómicas (1 está codificada como texto y 13 están codificadas como numéricas) y 2 son variables categóricas politómicas.
+    
+2.- Las variables con **correlaciones mayores a 0.5 sin duplicados** son: basedp, pkhr, maxhr, dp, pctMphr, dpmaxdo, mbp, dobdose, dobEF, bhr, basebp, sbp, dose, baseEF.
+
+3.- El dataset **no contiene valores vacíos**.
+
+4.- El dataset **sí contiene valores extremos en diferentes variables**, sobretodo en las variables baseEF y dobEF. Hemos procedido a **eliminar 101 filas** para poder trabajar con un dataset sin valores extremos. Podríamos haber obtado por otras técnicas como sustituir estos valores por la media o mediana, etc.., pero al haber suficientes observaciones optamos por la eliminación de valores extremos.
+
+
+## Análisis inferencial.
+
+**1.- Estudio de normalidad de las variables:** las únicas variables que cumplen con el requisito de normalidad son maxhr, pctMphr.
+
+**2.- Estudio de la homogeneidad de varianza:** las variables que cumplen con el requisito de homogeneidad de la varianza son bhr, basebp, basedp, pkhr, sbp, dp, dose, maxhr, pctMphr, mbp, dpmaxdo, age, dobEF.
+
+
+## Aplicación de pruebas estadísticas. 
+
+**1.- Prueba chi-cuadrado:**
+
+**1.1.- Variables gender y ecg:** hemos podido concluir que no hay una asociación significativa entre estas dos variables ya que el p-valor es mayor de 0.05.
+
+**1.2.- Variables chestpain y ecg:** hemos podido concluir que sí hay una asociación significativa entre estas dos variables ya que el p-valor es menor de 0.05.
+
+**2.- Prueba ANOVA de un factor:** se ha realizado entre las Variables maxhr y ecg. Hemos podido concluir que no hay un efecto significativo de ecg en maxhr ya que el p-valor es mayor de 0.05.
+
+**3.- Análisis de regresión logística multinomial:** se ha realizado entre la variable ecg en función de todas las variables numéricas. Hemos podido concluir que la precisión del modelo es solo de un 58.09% con un intervalo de confianza del 95% entre 49.33% y 66.49%. La precisión del modelo es baja para poder decir que el modelo es bueno. 
+
+**4.- Árbol de decisión:** se ha realizado entre las variables gender, hxofCig y ecg. Hemos buscado el mejor árbol entre estas tres variables, y, el resultado obtenido es que el mejor modelo de árbol de decisión es el modelo_gender con una precisión del 65%.
 
 
 # Aplicación Shiny.

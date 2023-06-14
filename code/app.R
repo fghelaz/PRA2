@@ -1,5 +1,20 @@
 
 
+################################################################################################################################################
+
+## FRANCISCO JAVIER GHERSI LÁZARO ##
+
+## JOSE MARIA ARROYO SANCHEZ ##
+
+## ANALISIS AUTOMATICO DE DATOS##
+
+## PRACTICA 2: TIPOLOGIA Y CICLO DE VIDA DE DATOS ##
+
+## JUNIO 2023 ##
+
+################################################################################################################################################
+
+## app.R ##
 
 ################################################################################################################################################
 
@@ -22,6 +37,7 @@ library(corrplot)
 library(skimr)
 library(stats)
 library(ggcorrplot)
+library(GGally)
 
 
 webshot::install_phantomjs() # Necesitas ejecutar esta línea solo una vez.
@@ -42,7 +58,7 @@ ui <- fluidPage(
   navbarPage("Análisis de datos",
              theme = shinytheme("flatly"),
              tabPanel("Carga de Datos",
-                      box(status = "success", solidHeader = TRUE, width = 12,
+                      box(status = "success", solidHeader = TRUE, width = 6,
                         h4(strong("Carga de Datos")),
                         p("En esta pestaña puedes cargar los datos desde un archivo CSV y realizar la configuración correspondiente."),
                         br(),
@@ -53,114 +69,148 @@ ui <- fluidPage(
                         actionButton("load", "Cargar datos"),
                         br(),
                         br(),
-                        div(
-                          style = "text-align: center;",
-                          img(src = "https://www.dropbox.com/s/q4o8ipmad0hgzcu/JMA_nofondo.png?raw=1", height = "100px"),
-                          p(strong("Desarrollado por José María Arroyo")),
-                          a(href = "mailto:arrocar@gmail.com", "Correo electrónico: arrocar@gmail.com")
-                        ))
+                        br(),
+                        br(),
+                        br(),
+                        box(status = "success", solidHeader = TRUE, width = 4,
+                            div(
+                              style = "text-align: center;",
+                              img(src = "https://www.dropbox.com/s/18qdvonjzptzgbp/logo%20uoc.png?raw=1", height = "100px"),
+                              p(strong("Francisco Javier Ghersi Lázaro")),
+                              p(strong("José María Arroyo Sánchez")),
+                        )))
               ),
              
              tabPanel("Resumen de Datos",
-                      h4(strong("Resumen de Datos")),
-                      p("En esta pestaña se muestra un resumen de los datos cargados, incluyendo información sobre las variables numéricas y no numéricas."),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Resumen de Datos"))),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          p("En esta pestaña se muestra un resumen de los datos cargados, incluyendo información sobre las variables numéricas y no numéricas.")),
                       br(),
-                      h4(strong("Listado de variables numéricas:")),
-                      verbatimTextOutput("numeric_vars"),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Listado de variables numéricas:")),
+                          verbatimTextOutput("numeric_vars")),
                       br(),
-                      h4(strong("Listado de variables no numéricas:")),
-                      verbatimTextOutput("non_numeric_vars"),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Listado de variables no numéricas:")),
+                          verbatimTextOutput("non_numeric_vars")),
                       br(),
-                      h4(strong("Tabla de datos:")),
-                      dataTableOutput("table")
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Tabla de datos:")),
+                          dataTableOutput("table"))
               ),
              
              tabPanel("Análisis de Datos",
-                  selectInput("selected_variable", "Variable:", choices = NULL),
-                  br(),
-                  h4(strong("Estructura de la variable")),
-                  verbatimTextOutput("variable_str"),
-                  br(),
-                  h4(strong("Resumen de la variable")),
-                  verbatimTextOutput("variable_summary"),
-                  br(),
-                  h4(strong("Resumen detallado de la variable")),
-                  verbatimTextOutput("variable_skim")
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          selectInput("selected_variable", "Variable:", choices = NULL)),
+                      br(),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Estructura de la variable")),
+                          verbatimTextOutput("variable_str")),
+                      br(),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Resumen de la variable")),
+                          verbatimTextOutput("variable_summary")),
+                      br(),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Resumen detallado de la variable")),
+                          verbatimTextOutput("variable_skim"))
              ),
             
              tabPanel("Gráficos importantes",
-                      h4(strong("Gráficos")),
-                      p("En esta pestaña se generan gráficos para explorar las variables numéricas y no numéricas del conjunto de datos."),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Gráficos")),
+                          p("En esta pestaña se generan gráficos para explorar las variables numéricas y no numéricas del conjunto de datos.")),
                       br(),
                       tabsetPanel(
                         tabPanel("Variables numéricas",
                                  br(),
-                                 selectInput("numeric_variable", "Seleccione una variable:", NULL),
-                                 plotOutput("histogram"),
-                                 plotOutput("boxplot")),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     selectInput("numeric_variable", "Seleccione una variable:", NULL),
+                                     plotOutput("histogram"),
+                                     plotOutput("boxplot"))),
                         tabPanel("Variables no numéricas",
                                  br(),
-                                 selectInput("non_numeric_variable", "Seleccione una variable:", NULL),
-                                 plotOutput("barchart"),
-                                 plotOutput("piechart")))
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     selectInput("non_numeric_variable", "Seleccione una variable:", NULL),
+                                     plotOutput("barchart"),
+                                     plotOutput("piechart"))))
               ),
              
              tabPanel("Medidas Estadísticas",
-                      h4(strong("Medidas Estadísticas")),
-                      p("En esta pestaña se calculan y muestran diferentes medidas estadísticas para analizar las características del conjunto de datos."),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Medidas Estadísticas")),
+                          p("En esta pestaña se calculan y muestran diferentes medidas estadísticas de las variables numéricas.")),
                       br(),
                       tabsetPanel(
                         tabPanel("Medidas de tendencia central",
                                  br(),
-                                 h5(strong("Media")),
-                                 p("La media es el promedio de todos los valores en una variable numérica. Representa el valor central de la distribución de los datos."),
-                                 h5(strong("Mediana")),
-                                 p("La mediana es el valor que se encuentra en el medio de una distribución de datos ordenados de menor a mayor. Es útil para describir la tendencia central en datos sesgados."),
-                                 h5(strong("Moda")),
-                                 p("La moda es el valor que aparece con mayor frecuencia en un conjunto de datos."),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     h5(strong("Media")),
+                                     p("La media es el promedio de todos los valores en una variable numérica. Representa el valor central de la distribución de los datos.")),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     h5(strong("Mediana")),
+                                     p("La mediana es el valor que se encuentra en el medio de una distribución de datos ordenados de menor a mayor. Es útil para describir la tendencia central en datos sesgados.")),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     h5(strong("Moda")),
+                                     p("La moda es el valor que aparece con mayor frecuencia en un conjunto de datos.")),
                                  br(),
-                                 selectInput("central_tendency", "Seleccione una variable:", NULL),
-                                 verbatimTextOutput("central_tendency_output")),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     selectInput("central_tendency", "Seleccione una variable:", NULL),
+                                     verbatimTextOutput("central_tendency_output"))),
                         tabPanel("Medidas de dispersión",
                                  br(),
-                                 h5(strong("Varianza")),
-                                 p("La varianza es la esperanza del cuadrado de la desviación estándar de una variable respecto a su media."),
-                                 h5(strong("Desviación Estándar")),
-                                 p("La desviación estándar muestra cuánto varían los datos con respecto a la media. Indica la cantidad de dispersión o propagación de los datos."),
-                                 h5(strong("Rango")),
-                                 p("El rango es la diferencia entre el valor máximo y el valor mínimo en una variable numérica. Proporciona una medida de la amplitud total de los datos."),
-                                 h5(strong("IQR")),
-                                 p("El IQR o rango intercuartílico es la diferencia entre el tercer y el primer cuartil de una distribución. Es una medida de la dispersión estadística."),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     h5(strong("Varianza")),
+                                     p("La varianza es la esperanza del cuadrado de la desviación estándar de una variable respecto a su media.")),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     h5(strong("Desviación Estándar")),
+                                     p("La desviación estándar muestra cuánto varían los datos con respecto a la media. Indica la cantidad de dispersión o propagación de los datos.")),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     h5(strong("Rango")),
+                                     p("El rango es la diferencia entre el valor máximo y el valor mínimo en una variable numérica. Proporciona una medida de la amplitud total de los datos.")),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     h5(strong("IQR")),
+                                     p("El IQR o rango intercuartílico es la diferencia entre el tercer y el primer cuartil de una distribución. Es una medida de la dispersión estadística.")),
                                  br(),
-                                 selectInput("dispersion", "Seleccione una variable:", NULL),
-                                 verbatimTextOutput("dispersion_output")),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     selectInput("dispersion", "Seleccione una variable:", NULL),
+                                     verbatimTextOutput("dispersion_output"))),
                         tabPanel("Medidas de asimetría",
                                  br(),
-                                 h5(strong("Asimetría")),
-                                 p("La asimetría es una medida de la simetría de la distribución de los datos. Puede ser positiva (sesgo a la derecha), negativa (sesgo a la izquierda) o cero (simetría)."),
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     h5(strong("Asimetría")),
+                                     p("La asimetría es una medida de la simetría de la distribución de los datos. Puede ser positiva (sesgo a la derecha), negativa (sesgo a la izquierda) o cero (simetría).")),
                                  br(),
-                                 selectInput("asymmetry", "Seleccione una variable:", NULL),
-                                 verbatimTextOutput("asimmetry_output")))
+                                 box(status = "success", solidHeader = TRUE, width = 12,
+                                     selectInput("asymmetry", "Seleccione una variable:", NULL),
+                                     verbatimTextOutput("asimmetry_output"))))
               ),
              
              tabPanel("Matriz de Correlación",
-                      h4(strong("Matriz de Correlación")),
-                      p("En esta pestaña se calcula y muestra la matriz de correlación entre las variables numéricas."),
-                      p("La correlación es una medida estadística que indica la relación entre dos variables. Puede variar entre -1 y 1. Un valor cercano a 1 indica una correlación positiva, un valor cercano a -1 indica una correlación negativa y un valor cercano a 0 indica una correlación débil o nula."),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Matriz de Correlación")),
+                          p("En esta pestaña se calcula y muestra la matriz de correlación entre las variables numéricas."),
+                          p("La correlación es una medida estadística que indica la relación entre dos variables. Puede variar entre -1 y 1. Un valor cercano a 1 indica una correlación positiva, un valor cercano a -1 indica una correlación negativa y un valor cercano a 0 indica una correlación débil o nula.")),
                       br(),
-                      selectInput("correlation_var1", "Seleccione la primera variable:", NULL),
-                      selectInput("correlation_var2", "Seleccione la segunda variable:", NULL),
-                      plotOutput("correlation_plot", height = "800px"),
-                      tags$style(type="text/css", "#correlation_plot {height: 800px;}")
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          selectInput("correlation_var1", "Seleccione la primera variable:", NULL),
+                          selectInput("correlation_var2", "Seleccione la segunda variable:", NULL)),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          plotOutput("correlation_plot", height = "800px"),
+                          tags$style(type="text/css", "#correlation_plot {height: 800px;}"))
               ),
              
              tabPanel("Análisis de regresión",
-                      h4(strong("Análisis de regresión")),
-                      p("Seleccione las variables numéricas para el análisis de regresión."),
-                      selectInput("independent_variables", "Variables independientes (X):", choices = "", multiple = TRUE),
-                      selectInput("dependent_variable", "Variable dependiente (Y):", choices = ""),
-                      h4("Resumen de la regresión"),
-                      verbatimTextOutput("regression_summary")
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4(strong("Análisis de regresión")),
+                          p("Seleccione las variables numéricas para el análisis de regresión.")),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          selectInput("independent_variables", "Variables independientes (X):", choices = "", multiple = TRUE),
+                          selectInput("dependent_variable", "Variable dependiente (Y):", choices = "")),
+                      box(status = "success", solidHeader = TRUE, width = 12,
+                          h4("Resumen de la regresión"),
+                          verbatimTextOutput("regression_summary"))
              ),
                  
   )
@@ -197,6 +247,12 @@ server <- function(input, output, session) {
     data(load_data(input$file))
     showNotification("Archivo CSV cargado correctamente.")
   })
+  
+  # Aumentar tamaño del csv hasta 1GB
+  options(shiny.maxRequestSize = 1024*1024*1024)
+  
+  # Instala la última versión de PhantomJS
+  webshot::install_phantomjs()
   
   # Actualizar las opciones de la variable de respuesta según los datos cargados
   observe({
