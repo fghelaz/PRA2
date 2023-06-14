@@ -27,3 +27,13 @@ La actividad ha sido realizada de manera colectiva por **JOSÉ MARÍA ARROYO SÁ
 
 
 * **dataset/stressEcho.csv**: contiene el dataset objetivo del estudio.
+
+## APP análisis
+
+Hemos desarrollado una App que facilita la exploración y ánalisis descriptivo de cualquier dataset. la aplicacion es de acceso público:
+
+* [https://arrocar.shinyapps.io/ANALISIS_DATOS/](url)
+
+
+
+
